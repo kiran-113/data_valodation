@@ -4,19 +4,31 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+
       - name: Install dependencies
         run: |
           pip install pandas numpy pytest
+
       - name: Run tests
         run: |
           pytest tests/
+
+      # Always run this step to summarize data quality results,
+      # even if the previous test step fails. Prevents pipeline crash.
+      - name: Summarize Data Quality
+        if: always()
+        run: |
+          echo "Data Quality Report:"
+          pytest tests/ --tb=short --disable-warnings || true
